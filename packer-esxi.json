@@ -4,11 +4,11 @@
     "iso_checksum": "",
     "iso_checksum_type": "none",
     "disk_size": "40960",
-    "root_password": "vagrant"
+    "root_password": "Vagrant12!"
   },
   "builders": [
     {
-      "name": "vmware-esxi",
+      "name": "vmware-vmware-esxi",
       "vm_name": "vmware-esxi",
       "vmdk_name": "vmware-esxi-disk0",
       "type": "vmware-iso",
@@ -32,6 +32,28 @@
         "ethernet0.virtualDev": "vmxnet3",
         "vhv.enable": "TRUE"
       },
+      "boot_command": [
+        "<enter><wait>O<wait> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/esxi-kickstart.cfg<enter>"
+      ]
+    },
+    {
+      "name": "qemu-vmware-esxi",
+      "vm_name": "vmware-esxi",
+      "type": "qemu",
+      "headless": false,
+      "disk_size": "{{ user `disk_size` }}",
+      "iso_url": "{{user `iso_file`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+      "ssh_username": "root",
+      "ssh_password": "{{user `root_password`}}",
+      "ssh_wait_timeout": "60m",
+      "shutdown_command": "esxcli system maintenanceMode set -e true -t 0 ; esxcli system shutdown poweroff -d 10 -r 'Packer Shutdown' ; esxcli system maintenanceMode set -e false -t 0",
+      "http_directory": "scripts",
+      "boot_wait": "5s",
+      "qemuargs": [ [ "-m", "4096" ], [ "-smp", "2" ], [ "-cpu", "SandyBridge-IBRS,+vmx" ] ],
+      "net_device": "e1000",
+      "disk_interface": "ide",
       "boot_command": [
         "<enter><wait>O<wait> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/esxi-kickstart.cfg<enter>"
       ]
