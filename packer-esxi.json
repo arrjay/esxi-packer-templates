@@ -40,7 +40,7 @@
       "name": "qemu-vmware-esxi",
       "vm_name": "vmware-esxi",
       "type": "qemu",
-      "headless": false,
+      "headless": true,
       "disk_size": "{{ user `disk_size` }}",
       "iso_url": "{{user `iso_file`}}",
       "iso_checksum": "{{user `iso_checksum`}}",
@@ -51,11 +51,21 @@
       "shutdown_command": "esxcli system maintenanceMode set -e true -t 0 ; esxcli system shutdown poweroff -d 10 -r 'Packer Shutdown' ; esxcli system maintenanceMode set -e false -t 0",
       "http_directory": "scripts",
       "boot_wait": "5s",
-      "qemuargs": [ [ "-m", "4096" ], [ "-smp", "2" ], [ "-cpu", "SandyBridge-IBRS,+vmx" ] ],
+      "vnc_port_min": "5944",
+      "vnc_port_max": "5944",
+      "qemuargs": [
+        [ "-boot", "menu=on,order=c,once=d" ],
+        [ "-m", "4096" ],
+        [ "-smp", "2" ],
+        [ "-cpu", "host" ],
+        [ "-drive","file={{ user `ovmf_code_path` }},if=pflash,format=raw,unit=0,readonly=on" ],
+        [ "-drive","file={{ user `ovmf_nvram` }},if=pflash,format=raw,unit=1" ],
+        [ "-drive", "file=output-qemu-vmware-esxi/vmware-esxi,if=ide,index=0" ]
+      ],
       "net_device": "e1000",
       "disk_interface": "ide",
       "boot_command": [
-        "<enter><wait>O<wait> ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/esxi-kickstart.cfg<enter>"
+        "<enter><wait>O<wait> ignoreHeadless=TRUE ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/esxi-kickstart.cfg<enter>"
       ]
     }
   ],
